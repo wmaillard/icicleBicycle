@@ -1,0 +1,18 @@
+{
+  "name": "icicleBicycle",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start"
+  },
+  "dependencies": {
+    "ajax-request": "^1.2.1",
+    "fs": "0.0.2",
+    "mime": "^1.3.4",
+    "react": "15.2.1",
+    "react-native": "0.30.0",
+    "react-native-camera": "git+https://github.com/lwansbrough/react-native-camera.git",
+    "rn-camera-roll": "0.0.5",
+    "util": "^0.10.3"
+  }
+}
