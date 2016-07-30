@@ -2,6 +2,10 @@ import React, { Component } from 'react';
 import { View, Text, StyleSheet,   Dimensions } from 'react-native';
 import Camera from 'react-native-camera';
 
+//var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/image/upload';
+
+
+
 export default class UseCamera extends Component {
   render(){
     return (
@@ -21,7 +25,11 @@ export default class UseCamera extends Component {
   }
   takePicture() {
     this.camera.capture()
-      .then((data) => console.log(data))
+      .then(function(data){
+        console.log(data);
+       
+
+        })
       .catch(err => console.error(err));
   }
 }

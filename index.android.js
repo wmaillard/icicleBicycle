@@ -16,11 +16,9 @@ import Scenes from './Scenes.android';
 import Camera from 'react-native-camera';
 
 
-
-var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/image/upload'
+var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/image/upload';
 var up_preset = 'fty1rxtk';
-
-
+var photo = 'file:///data/user/0/com.iciclebicycle/cache/IMG_20160730_094537-928971708.jpg'
 
 
 
@@ -41,24 +39,31 @@ export default class icicleBicycle extends Component {
 
             // Function to call when a new scene should be displayed           
             onForward={ () => {
-              var xhr = new XMLHttpRequest();
+               var xhr = new XMLHttpRequest();
               var body = new FormData();
               body.append('upload_preset', up_preset);
-              body.append('file', photo);
+              body.append('file', {uri: photo, type: "image/jpg", name: 'name'});
               body.append('tags', 'asdfasdffsdf, sdfgdfafsDF')
               xhr.open('POST', serverUrl);
               xhr.send(body);
               xhr.onreadystatechange = function(e){
-                if(xhr.readyState == 4 && xhr.status === 200){
+                if(xhr.readyState !==4){
+                  return;
+                }
+                if(xhr.status === 200){
                   console.log(xhr.responseText); //
+                  alert('Successfully uploaded your photo');
                   var res = JSON.parse(xhr.responseText);
                   console.log(res.tags);
                   console.log(res.url);
                   console.log(res.format) 
                 }else{
+                  console.log('******************');
+                  console.log(xhr.responseText);
                   alert('Uploading your image failed :(')
                   console.warn('error');
                 }
+              }
 
 
 
