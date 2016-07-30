@@ -14,11 +14,12 @@ import {
 import UseCamera from './UseCamera.android';
 import Scenes from './Scenes.android';
 import Camera from 'react-native-camera';
+const base64 = require('base-64');
 
 
-var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/image/upload';
-var up_preset = 'fty1rxtk';
-var photo = 'file:///data/user/0/com.iciclebicycle/cache/IMG_20160730_094537-928971708.jpg'
+var username = '717148529973165';
+var password = 'xAEaowxg95A2fpNk-yUVvULqOiA';
+var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/resources/image';
 
 
 
@@ -30,73 +31,72 @@ export default class icicleBicycle extends Component {
     
       <Navigator
         style={{flex: 1, backgroundColor: 'blue'}}
-        initialRoute={{ title: 'Home Page', index: 0, body: null}}
+        initialRoute={{ title: 'Home Page', index: 0, body: null, outline: 'true'}}
         renderScene={(route, navigator) =>
           <MyScene
+            outline={route.outline}
             style={{flex: 1, backgroundColor: 'red'}}
             title={route.title}
             body = {route.body}
 
             // Function to call when a new scene should be displayed           
-            onForward={ () => {
-               var xhr = new XMLHttpRequest();
-              var body = new FormData();
-              body.append('upload_preset', up_preset);
-              body.append('file', {uri: photo, type: "image/jpg", name: 'name'});
-              body.append('tags', 'asdfasdffsdf, sdfgdfafsDF')
-              xhr.open('POST', serverUrl);
-              xhr.send(body);
-              xhr.onreadystatechange = function(e){
-                if(xhr.readyState !==4){
-                  return;
-                }
-                if(xhr.status === 200){
-                  console.log(xhr.responseText); //
-                  alert('Successfully uploaded your photo');
-                  var res = JSON.parse(xhr.responseText);
-                  console.log(res.tags);
-                  console.log(res.url);
-                  console.log(res.format) 
-                }else{
-                  console.log('******************');
-                  console.log(xhr.responseText);
-                  alert('Uploading your image failed :(')
-                  console.warn('error');
-                }
-              }
+            onGallery ={ () => {
+                console.log('********************');
+
+
+               var creds = base64.encode(username + ':' + password);
+
+                var request = new XMLHttpRequest();
+                request.open('GET', serverUrl);
+                request.setRequestHeader("Authorization", "Basic " + creds);
+
+                request.send();
+
+                request.onreadystatechange = (e) => {
+                  if (request.readyState !== 4) {
+                    return;
+                  }
+
+                  if (request.status === 200) {
+                    console.log(request.responseText);
+                    console.log('************************');
+                    var responseJson = JSON.parse(request.responseText);
+                    console.log(responseJson.resources);
+                    var images = "";
+                    for(var i = 0; i < responseJson.resources.length; i++){
+                      images +=  "<Image style= {styles.image} source={{uri:" + responseJson.resources[i].url + "}}/>"
+
+                    }
+                    navigator.push({
+                      title: 'Gallery',
+                      body: images,
+                      index: 3,
+                      outline: 'true'
+                    })
+                  
+                    console.log('success', request.responseText);
+                  } else {
+                    console.warn('error');
+                    console.log('************request******************');
+                    console.log(request);
+                    console.warn(request.responseText);
+                  }
+                };
 
 
 
-              /*
-              fetch('https://api.cloudinary.com/v1_1/ochemaster/image/upload', {
-                method: 'POST',
-                headers: {
-                  'Accept': 'application/json',
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  file: 'yourValue',
-                  secondParam: 'yourOtherValue',
-                })
-              })*/
 
+            }}
 
+            onAddImage ={ () => {
 
-
-              const nextIndex = route.index + 1;
-              if(route.index == 2){
                 navigator.push({
                   title: 'Camera',
-                  body: <UseCamera />
+                  body: <UseCamera />,
+                  index: 1,
+                  outline: 'false'
                 })
-              }
-              else{
-                navigator.push({
-                  title: 'Scene ' + nextIndex,
-                  index: nextIndex,
-                  body: <Text>Hey</Text>
-                });
-              }
+
             }}
 
             // Function to call to go back to the previous scene
@@ -121,15 +121,29 @@ export default class icicleBicycle extends Component {
 class MyScene extends Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
-    onForward: PropTypes.func.isRequired,
+    onGallery: PropTypes.func.isRequired,
+    onAddImage: PropTypes.func.isRequired,
     onBack: PropTypes.func.isRequired,
-    body: PropTypes.element
+    body: PropTypes.element,
+    outline: PropTypes.string.isRequired
+
   }
   render() {
-    if(this.props.title === 'Camera'){
+    if(this.props.title === 'Gallery'){
       console.log(this.props.body);
-      return (this.props.body);
-    }else{
+      return (       
+       <View>
+        <Image style= {styles.image} source={{uri: 'file:///data/user/0/com.iciclebicycle/cache/IMG_20160724_161401-1610158601.jpg'}}/>         
+        <Text>Title: </Text>
+      </View>);
+    }
+
+
+
+
+
+
+    else{
       console.log(this.props.body);
       return (
 
@@ -137,11 +151,11 @@ class MyScene extends Component {
 
         <Image style= {styles.image} source={{uri: 'file:///data/user/0/com.iciclebicycle/cache/IMG_20160724_161401-1610158601.jpg'}}/>         
         <Text>Current Scene: { this.props.title }</Text>
-          <TouchableHighlight onPress={this.props.onForward}>
-            <Text>Tap me to load the next scene</Text>
+          <TouchableHighlight onPress={this.props.onGallery}>
+            <Text>Gallery</Text>
           </TouchableHighlight>
-          <TouchableHighlight onPress={this.props.onBack}>
-            <Text>Tap me to go back</Text>
+          <TouchableHighlight onPress={this.props.onAddImage}>
+            <Text>Add Image</Text>
           </TouchableHighlight>
         </View>
       )

@@ -1,10 +1,11 @@
-import React, { Component } from 'react';
-import { View, Text, StyleSheet,   Dimensions } from 'react-native';
+import React, { Component} from 'react';
+import { View, Text, StyleSheet,   Dimensions, Navigator } from 'react-native';
 import Camera from 'react-native-camera';
 
-//var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/image/upload';
 
 
+var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/image/upload';
+var up_preset = 'fty1rxtk';
 
 export default class UseCamera extends Component {
   render(){
@@ -27,7 +28,32 @@ export default class UseCamera extends Component {
     this.camera.capture()
       .then(function(data){
         console.log(data);
-       
+        var xhr = new XMLHttpRequest();
+        var body = new FormData();
+        body.append('upload_preset', up_preset);
+        body.append('file', {uri: data.path, type: "image/jpg", name: 'name'});
+        body.append('tags', 'asdfasdffsdf, sdfgdfafsDF')
+        xhr.open('POST', serverUrl);
+        xhr.send(body);
+        xhr.onreadystatechange = function(e){
+          if(xhr.readyState !==4){
+            return;
+          }
+          if(xhr.status === 200){
+            console.log(xhr.responseText); //
+            alert('Successfully uploaded your photo');
+            var res = JSON.parse(xhr.responseText);
+            console.log(res.tags);
+            console.log(res.url);
+            console.log(res.format) 
+          }else{
+            console.log('******************');
+            console.log(xhr.responseText);
+            alert('Uploading your image failed :(')
+            console.warn('error');
+          }
+        }
+       navigator.pop();
 
         })
       .catch(err => console.error(err));
