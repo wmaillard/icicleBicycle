@@ -1,4 +1,4 @@
-import React, { Component} from 'react';
+import React, { Component, PropTypes} from 'react';
 import { View, Text, StyleSheet,   Dimensions, Navigator } from 'react-native';
 import Camera from 'react-native-camera';
 
@@ -8,6 +8,12 @@ var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/image/upload';
 var up_preset = 'fty1rxtk';
 
 export default class UseCamera extends Component {
+
+  static propTypes = {
+    onBack: PropTypes.func
+
+
+  }
   render(){
     return (
  
@@ -20,12 +26,14 @@ export default class UseCamera extends Component {
         captureTarget ={Camera.constants.CaptureTarget.temp}
         captureQuality = {Camera.constants.CaptureQuality.low}>
 
-        <Text onPress={this.takePicture.bind(this)}>[CAPTURE]</Text>
+        <Text onPress = {this.takePicture.bind(this)}>[CAPTURE]</Text>
+        <Text >Exit</Text>
       </Camera>
 
     )
   }
   takePicture() {
+    var goBack = this.props.onBack;
     this.camera.capture()
       .then(function(data){
         console.log(data);
@@ -46,14 +54,19 @@ export default class UseCamera extends Component {
             var res = JSON.parse(xhr.responseText);
             console.log(res.tags);
             console.log(res.url);
-            console.log(res.format) 
+            console.log(res.format);
+
           }else{
             console.log('******************');
             console.log(xhr.responseText);
             alert('Uploading your image failed :(')
             console.warn('error');
+
           }
         }
+
+        goBack();
+
        //navigator.pop();
 
         })

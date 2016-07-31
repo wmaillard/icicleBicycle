@@ -97,9 +97,10 @@ export default class icicleBicycle extends Component {
 
                 navigator.push({
                   title: 'Camera',
-                  body: <UseCamera />,
+                  body: <UseCamera onBack = {() => {
+                    navigator.pop()}} />,
                   index: 1,
-                  outline: 'false'
+                  outline: 'false', 
                 })
 
             }}
@@ -151,8 +152,6 @@ class MyScene extends Component {
               right += '/';
             }
           }
-
-          console.log(left + 'q_20/' + right)
           return left + 'q_50,w_500,h_500,c_fill/' + right;
         }
 
@@ -185,25 +184,6 @@ class MyScene extends Component {
           )
         }
 
- //{theGallery(imgs)}
- /*
-           <View style={{flex: 1, backgroundColor: 'blue'}}>
-            <Text>Gallery</Text>
-          </View>
-
-
-
-
-                      </View>
-            <View style={{flex: 1,  backgroundColor: 'red'}} >
-              
-            </View>
-            <View style={{flex: 1,  backgroundColor: 'yellow'}} >
-              {theGallery(imgs3)}
-            </View>
-
-          flexWrap is not working with scrollView
-            */
 
       return (
 
