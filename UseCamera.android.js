@@ -2,7 +2,7 @@ import React, { Component, PropTypes} from 'react';
 import { View, Text, StyleSheet,   Dimensions, Navigator } from 'react-native';
 import Camera from 'react-native-camera';
 
-
+import { Button, Card, Toolbar } from 'react-native-material-design';
 
 var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/image/upload';
 var up_preset = 'fty1rxtk';
@@ -16,9 +16,15 @@ export default class UseCamera extends Component {
   }
   render(){
     return (
- 
+    <View style ={{flex: 1}}>
+
+      <View style ={{flex: 1}}>
+            <Toolbar title={'Upload a Photo'} icon={'arrow-back'} onIconPress={this.props.onBack} />
+      </View>
+  
+
       <Camera
-      	style = {{flex: 1}}
+      	style = {{flex: 10}}
         ref={(cam) => {
           this.camera = cam;
         }}
@@ -29,6 +35,9 @@ export default class UseCamera extends Component {
         <Text onPress = {this.takePicture.bind(this)}>[CAPTURE]</Text>
         <Text >Exit</Text>
       </Camera>
+      </View>
+
+
 
     )
   }
@@ -36,7 +45,6 @@ export default class UseCamera extends Component {
     var goBack = this.props.onBack;
     this.camera.capture()
       .then(function(data){
-        console.log(data);
         var xhr = new XMLHttpRequest();
         var body = new FormData();
         body.append('upload_preset', up_preset);
@@ -49,12 +57,9 @@ export default class UseCamera extends Component {
             return;
           }
           if(xhr.status === 200){
-            console.log(xhr.responseText); //
+
             alert('Successfully uploaded your photo');
             var res = JSON.parse(xhr.responseText);
-            console.log(res.tags);
-            console.log(res.url);
-            console.log(res.format);
 
           }else{
             console.log('******************');

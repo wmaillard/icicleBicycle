@@ -9,8 +9,11 @@ import {
   View, 
   Navigator,
   Image,
-  ScrollView
+  ScrollView,
+  BackAndroid
 } from 'react-native';
+
+import { Button, Card, Toolbar } from 'react-native-material-design';
 
 import UseCamera from './UseCamera.android';
 import Scenes from './Scenes.android';
@@ -20,12 +23,13 @@ const base64 = require('base-64');
 
 var username = '717148529973165';
 var password = 'xAEaowxg95A2fpNk-yUVvULqOiA';
-var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/resources/image';
+var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/resources/image?max_results=100';
 
 
 
 export default class icicleBicycle extends Component {
   render() {
+   
 
     return (
 
@@ -43,8 +47,11 @@ export default class icicleBicycle extends Component {
 
             // Function to call when a new scene should be displayed           
             onGallery ={ () => {
-                console.log('********************');
 
+                BackAndroid.addEventListener('hardwareBackPress', function() {
+                   navigator.pop();
+                   return true;
+                });
 
                 var creds = base64.encode(username + ':' + password);
 
@@ -60,17 +67,9 @@ export default class icicleBicycle extends Component {
                   }
 
                   if (request.status === 200) {
-                   // console.log(request.responseText);
-                   // console.log('************************');
+
                     var responseJson = JSON.parse(request.responseText);
-                  //  console.log(responseJson.resources);
-                  /*  var images = "";
-                    for(var i = 0; i < 2; i++){ //responseJson.resources.length
-                      images +=  "<Image style= {styles.image} source={{uri:" + responseJson.resources[i].url + "}}/>"
 
-                    }*/
-
-                   // var inner = {__html: images};
                     navigator.push({
                       title: 'Gallery',
                       body: <Text>Hey</Text> ,
@@ -79,7 +78,6 @@ export default class icicleBicycle extends Component {
                       galleryData: responseJson.resources
                     })
                   
-                    console.log('success');
                   } else {
                     console.warn('error');
                     console.log('************request******************');
@@ -94,6 +92,10 @@ export default class icicleBicycle extends Component {
             }}
 
             onAddImage ={ () => {
+                  BackAndroid.addEventListener('hardwareBackPress', function() {
+                       navigator.pop();
+                       return true;
+                });
 
                 navigator.push({
                   title: 'Camera',
@@ -189,10 +191,10 @@ class MyScene extends Component {
 
 
           <View style ={{flex: 1}}>
-            <View style = {{flex: 1}}>
-              <Text>Gallery</Text>
+          <View style ={{flex: 1}}>
+            <Toolbar title={'Gallery'} icon={'arrow-back'} onIconPress={this.props.onBack} />
             </View>
-            <ScrollView contentContainerStyle = {{justifyContent: 'center', alignItems: 'center'}} style={{  flex: 6, flexWrap: 'wrap', backgroundColor: 'blue'}}>
+            <ScrollView contentContainerStyle = {{justifyContent: 'center', alignItems: 'center'}} style={{  flex: 10, flexWrap: 'wrap', backgroundColor: 'blue'}}>
 
                 {theGallery(imgs1)}
                 {theGallery(imgs2)}
@@ -215,18 +217,30 @@ class MyScene extends Component {
 
 
     else{
-      console.log(this.props.body);
       return (
         <View>
+        <View style ={{flex: 1}}>
+          <Toolbar title={'Photo Share'} />
+        </View>
+        <View style ={{flex: 9}}>
+          <Card>
+              <Card.Media
+                  image={<Image  source={require('./img/welcome.jpg')} />}
+                  height={300}
+                  overlay
+              />
+              <Card.Body>
+                  <Text>Welcome to our image sharing app!  Add an image to our gallery by pressing 'Add Image' or view our user's images 
+                  by pressing 'Gallery'</Text>
+              </Card.Body>
 
-        <Image style= {styles.image} source={{uri: 'file:///data/user/0/com.iciclebicycle/cache/IMG_20160724_161401-1610158601.jpg'}}/>         
-        <Text>Current Scene: { this.props.title }</Text>
-          <TouchableHighlight onPress={this.props.onGallery}>
-            <Text>Gallery</Text>
-          </TouchableHighlight>
-          <TouchableHighlight onPress={this.props.onAddImage}>
-            <Text>Add Image</Text>
-          </TouchableHighlight>
+          </Card>       
+
+          <Button  text='Gallery' value = "NORMAL RAISED" raised={true} onPress={this.props.onGallery}>
+          </Button>
+          <Button  text='Add Image' value = "NORMAL RAISED" raised={true} onPress={this.props.onAddImage}>
+          </Button>
+          </View>
         </View>
       )
     }
