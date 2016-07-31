@@ -17,7 +17,8 @@ export default class UseCamera extends Component {
           this.camera = cam;
         }}
         aspect={Camera.constants.Aspect.fill}
-        captureTarget ={Camera.constants.CaptureTarget.temp}>
+        captureTarget ={Camera.constants.CaptureTarget.temp}
+        captureQuality = {Camera.constants.CaptureQuality.low}>
 
         <Text onPress={this.takePicture.bind(this)}>[CAPTURE]</Text>
       </Camera>
@@ -53,7 +54,7 @@ export default class UseCamera extends Component {
             console.warn('error');
           }
         }
-       navigator.pop();
+       //navigator.pop();
 
         })
       .catch(err => console.error(err));

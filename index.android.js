@@ -8,7 +8,8 @@ import {
   TouchableHighlight,
   View, 
   Navigator,
-  Image
+  Image,
+  ScrollView
 } from 'react-native';
 
 import UseCamera from './UseCamera.android';
@@ -30,7 +31,7 @@ export default class icicleBicycle extends Component {
 
     
       <Navigator
-        style={{flex: 1, backgroundColor: 'blue'}}
+        style={{flex: 1, backgroundColor: 'powderblue'}}
         initialRoute={{ title: 'Home Page', index: 0, body: null, outline: 'true'}}
         renderScene={(route, navigator) =>
           <MyScene
@@ -38,13 +39,14 @@ export default class icicleBicycle extends Component {
             style={{flex: 1, backgroundColor: 'red'}}
             title={route.title}
             body = {route.body}
+            galleryData = {route.galleryData}
 
             // Function to call when a new scene should be displayed           
             onGallery ={ () => {
                 console.log('********************');
 
 
-               var creds = base64.encode(username + ':' + password);
+                var creds = base64.encode(username + ':' + password);
 
                 var request = new XMLHttpRequest();
                 request.open('GET', serverUrl);
@@ -58,23 +60,26 @@ export default class icicleBicycle extends Component {
                   }
 
                   if (request.status === 200) {
-                    console.log(request.responseText);
-                    console.log('************************');
+                   // console.log(request.responseText);
+                   // console.log('************************');
                     var responseJson = JSON.parse(request.responseText);
-                    console.log(responseJson.resources);
-                    var images = "";
-                    for(var i = 0; i < responseJson.resources.length; i++){
+                  //  console.log(responseJson.resources);
+                  /*  var images = "";
+                    for(var i = 0; i < 2; i++){ //responseJson.resources.length
                       images +=  "<Image style= {styles.image} source={{uri:" + responseJson.resources[i].url + "}}/>"
 
-                    }
+                    }*/
+
+                   // var inner = {__html: images};
                     navigator.push({
                       title: 'Gallery',
-                      body: images,
+                      body: <Text>Hey</Text> ,
                       index: 3,
-                      outline: 'true'
+                      outline: 'true',
+                      galleryData: responseJson.resources
                     })
                   
-                    console.log('success', request.responseText);
+                    console.log('success');
                   } else {
                     console.warn('error');
                     console.log('************request******************');
@@ -121,24 +126,110 @@ export default class icicleBicycle extends Component {
 class MyScene extends Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
-    onGallery: PropTypes.func.isRequired,
-    onAddImage: PropTypes.func.isRequired,
-    onBack: PropTypes.func.isRequired,
+    onGallery: PropTypes.func,
+    onAddImage: PropTypes.func,
+    onBack: PropTypes.func,
     body: PropTypes.element,
-    outline: PropTypes.string.isRequired
+    outline: PropTypes.string,
+    galleryData: PropTypes.array
 
   }
   render() {
     if(this.props.title === 'Gallery'){
-      console.log(this.props.body);
-      return (       
-       <View>
-        <Image style= {styles.image} source={{uri: 'file:///data/user/0/com.iciclebicycle/cache/IMG_20160724_161401-1610158601.jpg'}}/>         
-        <Text>Title: </Text>
-      </View>);
+        var data = this.props.galleryData;
+
+        var reduceQuality = function(uri){
+          var whole = uri.split('/');
+          var left = "http://";
+          var right = "";
+          for(var i = 2; i < whole.length - 2; i++){
+            left += whole[i] + '/';
+          }
+          for(var i = whole.length - 2; i < whole.length; i++){
+            right += whole[i];
+            if(i != whole.length - 1){
+              right += '/';
+            }
+          }
+
+          console.log(left + 'q_20/' + right)
+          return left + 'q_50,w_500,h_500,c_fill/' + right;
+        }
+
+
+
+        var imgs1 = [];
+        var imgs2 = [];
+        var imgs3 = [];
+
+
+
+        for(var i = 0; i < data.length; i++){
+          if(i % 3 == 0){
+           imgs1.push(<Image style= {styles.image} source={{uri: reduceQuality(data[i].url)}}/>);
+         }
+          else if(i % 3 == 1) {
+            imgs2.push(<Image style= {styles.image} source={{uri: reduceQuality(data[i].url)}}/>);
+          }
+          else {
+            imgs3.push(<Image style= {styles.image} source={{uri: reduceQuality(data[i].url)}}/>);
+          }
+
+        }
+
+
+        var theGallery = function(theImgs){
+          return(
+              [theImgs]
+
+          )
+        }
+
+ //{theGallery(imgs)}
+ /*
+           <View style={{flex: 1, backgroundColor: 'blue'}}>
+            <Text>Gallery</Text>
+          </View>
+
+
+
+
+                      </View>
+            <View style={{flex: 1,  backgroundColor: 'red'}} >
+              
+            </View>
+            <View style={{flex: 1,  backgroundColor: 'yellow'}} >
+              {theGallery(imgs3)}
+            </View>
+
+          flexWrap is not working with scrollView
+            */
+
+      return (
+
+
+          <View style ={{flex: 1}}>
+            <View style = {{flex: 1}}>
+              <Text>Gallery</Text>
+            </View>
+            <ScrollView contentContainerStyle = {{justifyContent: 'center', alignItems: 'center'}} style={{  flex: 6, flexWrap: 'wrap', backgroundColor: 'blue'}}>
+
+                {theGallery(imgs1)}
+                {theGallery(imgs2)}
+                {theGallery(imgs3)}
+
+
+           
+            </ScrollView>
+          </View>
+
+
+        )
     }
 
-
+    else if(this.props.title === 'Camera'){
+      return(this.props.body);
+    }
 
 
 
@@ -146,7 +237,6 @@ class MyScene extends Component {
     else{
       console.log(this.props.body);
       return (
-
         <View>
 
         <Image style= {styles.image} source={{uri: 'file:///data/user/0/com.iciclebicycle/cache/IMG_20160724_161401-1610158601.jpg'}}/>         
@@ -169,7 +259,8 @@ class MyScene extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
+
   },
   preview: {
     flex: 1,
@@ -185,8 +276,8 @@ const styles = StyleSheet.create({
     margin: 40
   },
     image: {
-    width: 100,
-    height: 100,
+    width: 200,
+    height: 200,
     margin: 10,
   },
 });
