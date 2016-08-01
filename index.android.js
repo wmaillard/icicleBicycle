@@ -40,7 +40,7 @@ export default class icicleBicycle extends Component {
         renderScene={(route, navigator) =>
           <MyScene
             outline={route.outline}
-            style={{flex: 1, backgroundColor: 'red'}}
+            style={{flex: 1, backgroundColor: 'powserblue'}}
             title={route.title}
             body = {route.body}
             galleryData = {route.galleryData}
@@ -72,7 +72,6 @@ export default class icicleBicycle extends Component {
 
                     navigator.push({
                       title: 'Gallery',
-                      body: <Text>Hey</Text> ,
                       index: 3,
                       outline: 'true',
                       galleryData: responseJson.resources
@@ -194,7 +193,7 @@ class MyScene extends Component {
           <View style ={{flex: 1}}>
             <Toolbar title={'Gallery'} icon={'arrow-back'} onIconPress={this.props.onBack} />
             </View>
-            <ScrollView contentContainerStyle = {{justifyContent: 'center', alignItems: 'center'}} style={{  flex: 10, flexWrap: 'wrap', backgroundColor: 'blue'}}>
+            <ScrollView contentContainerStyle = {{justifyContent: 'center', alignItems: 'center'}} style={{backgroundColor: 'powderblue',  flex: 10, flexWrap: 'wrap'}}>
 
                 {theGallery(imgs1)}
                 {theGallery(imgs2)}
@@ -225,7 +224,7 @@ class MyScene extends Component {
         <View style ={{flex: 9}}>
           <Card>
               <Card.Media
-                  image={<Image  source={require('./img/welcome.jpg')} />}
+                  image={<Image style = {styles.image}  source={require('./img/welcome.jpg')} />}
                   height={300}
                   overlay
               />

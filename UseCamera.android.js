@@ -32,8 +32,10 @@ export default class UseCamera extends Component {
         captureTarget ={Camera.constants.CaptureTarget.temp}
         captureQuality = {Camera.constants.CaptureQuality.low}>
 
-        <Text onPress = {this.takePicture.bind(this)}>[CAPTURE]</Text>
-        <Text >Exit</Text>
+        <View style={{flex:5}}/>
+        <Button style={{flex:1}} text='Take Picture and Upload' value = "NORMAL RAISED" raised={true} onPress={this.takePicture.bind(this)}>
+        </Button>
+
       </Camera>
       </View>
 
