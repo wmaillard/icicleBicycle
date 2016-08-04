@@ -10,7 +10,8 @@ import {
   Navigator,
   Image,
   ScrollView,
-  BackAndroid
+  BackAndroid,
+  ListView
 } from 'react-native';
 
 import { Button, Card, Toolbar } from 'react-native-material-design';
@@ -38,7 +39,7 @@ export default class icicleBicycle extends Component {
         style={{flex: 1, backgroundColor: 'powderblue'}}
         initialRoute={{ title: 'Home Page', index: 0, body: null, outline: 'true'}}
         renderScene={(route, navigator) =>
-          <MyScene
+        <MyScene
             outline={route.outline}
             style={{flex: 1, backgroundColor: 'powserblue'}}
             title={route.title}
@@ -47,7 +48,7 @@ export default class icicleBicycle extends Component {
 
             // Function to call when a new scene should be displayed           
             onGallery ={ () => {
-
+                console.log(typeof navigator);
                 BackAndroid.addEventListener('hardwareBackPress', function() {
                    navigator.pop();
                    return true;
@@ -99,7 +100,7 @@ export default class icicleBicycle extends Component {
                 navigator.push({
                   title: 'Camera',
                   body: <UseCamera onBack = {() => {
-                    navigator.pop()}} />,
+                    navigator.pop()}} globalNavigator = {navigator} />,
                   index: 1,
                   outline: 'false', 
                 })
@@ -112,7 +113,9 @@ export default class icicleBicycle extends Component {
                 navigator.pop();
               }
             }}
-          />
+        />
+
+
         
       }
      
@@ -124,8 +127,20 @@ export default class icicleBicycle extends Component {
     )
   }
 }
+class Gallery extends Component {
+
+
+
+
+}
+
+
+
 
 class MyScene extends Component {
+
+
+
   static propTypes = {
     title: PropTypes.string.isRequired,
     onGallery: PropTypes.func,
@@ -136,11 +151,14 @@ class MyScene extends Component {
     galleryData: PropTypes.array
 
   }
+
   render() {
     if(this.props.title === 'Gallery'){
         var data = this.props.galleryData;
 
         var reduceQuality = function(uri){
+          console.log('****************************', uri);
+          //uri = uri.rowData;
           var whole = uri.split('/');
           var left = "http://";
           var right = "";
@@ -158,33 +176,16 @@ class MyScene extends Component {
 
 
 
-        var imgs1 = [];
-        var imgs2 = [];
-        var imgs3 = [];
-
-
-
+        var urls = [];
         for(var i = 0; i < data.length; i++){
-          if(i % 3 == 0){
-           imgs1.push(<Image style= {styles.image} source={{uri: reduceQuality(data[i].url)}}/>);
-         }
-          else if(i % 3 == 1) {
-            imgs2.push(<Image style= {styles.image} source={{uri: reduceQuality(data[i].url)}}/>);
-          }
-          else {
-            imgs3.push(<Image style= {styles.image} source={{uri: reduceQuality(data[i].url)}}/>);
-          }
-
+          urls.push(data[i].url);
         }
 
-
-        var theGallery = function(theImgs){
-          return(
-              [theImgs]
-
-          )
-        }
-
+        const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => {
+          r1 !== r2}});
+        this.state = {
+          dataSource: ds.cloneWithRows(urls)
+        };
 
       return (
 
@@ -193,15 +194,15 @@ class MyScene extends Component {
           <View style ={{flex: 1}}>
             <Toolbar title={'Gallery'} icon={'arrow-back'} onIconPress={this.props.onBack} />
             </View>
-            <ScrollView contentContainerStyle = {{justifyContent: 'center', alignItems: 'center'}} style={{backgroundColor: 'powderblue',  flex: 10, flexWrap: 'wrap'}}>
 
-                {theGallery(imgs1)}
-                {theGallery(imgs2)}
-                {theGallery(imgs3)}
-
-
-           
-            </ScrollView>
+          <ListView contentContainerStyle = {{justifyContent: 'center', alignItems: 'center'}}
+          style={{backgroundColor: 'powderblue',  flex: 10, flexWrap: 'wrap'}}
+          dataSource={this.state.dataSource}
+          renderRow={(rowData) => {
+            return <Image style= {styles.image} source={{uri: reduceQuality(rowData)}}/>
+            }
+          }
+            />
           </View>
 
 
@@ -209,6 +210,9 @@ class MyScene extends Component {
     }
 
     else if(this.props.title === 'Camera'){
+      return(this.props.body);
+    }
+    else if(this.props.title === 'Preview'){
       return(this.props.body);
     }
 

@@ -10,6 +10,7 @@ import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
 import com.lwansbrough.RCTCamera.*;
+import com.projectseptember.RNGL.RNGLPackage;
 
 
 
@@ -29,7 +30,8 @@ public class MainApplication extends Application implements ReactApplication {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
             new CameraRollPackage(),
-          new RCTCameraPackage()
+          new RCTCameraPackage(),
+              new RNGLPackage()
       );
     }
   };
