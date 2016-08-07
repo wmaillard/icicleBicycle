@@ -128,6 +128,7 @@ void main () {
 
             alert('Successfully uploaded your photo');
             var res = JSON.parse(xhr.responseText);
+            console.log(res);
 
           }else{
             console.log('******************');

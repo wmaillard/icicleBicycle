@@ -11,7 +11,8 @@ import {
   Image,
   ScrollView,
   BackAndroid,
-  ListView
+  ListView,
+  AsyncStorage
 } from 'react-native';
 
 import { Button, Card, Toolbar } from 'react-native-material-design';
@@ -30,21 +31,23 @@ var username = '717148529973165';
 var password = 'xAEaowxg95A2fpNk-yUVvULqOiA';
 var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/resources/image?max_results=100';
 
-var nickName = '';
-var userId = '';
-var idToken = '';
-var loggedIn = false;
+/*var nickName = 'wmaillard';
+var userId = 'auth0|57a64bc925e541296cf59303';
+var idToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL21haWxsYXJkLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1N2E2NGJjOTI1ZTU0MTI5NmNmNTkzMDMiLCJhdWQiOiI0Wm9WeEdVVk01YkZPMFBBOEM2eGs0MDlJYlJsNkpPMCIsImV4cCI6MTQ3MDYzNDc4NCwiaWF0IjoxNDcwNTk4Nzg0fQ.WO8_x-8vpTJk4oVwY9xAsEQBGK3Vrf8TfblCISit80U';
+var loggedIn = true;*/
 
 
 
-if(loggedIn === false){
-  	lock.show({}, loginCallback);
-}
+getUserInfo(function(userInfo, err){
+
+	if(!userInfo || userInfo.loggedIn === false){
+		lock.show({}, loginCallback);
+	}
+});
 
 export default class icicleBicycle extends Component {
 	  render() {
 	  	
-
 
     return (
 
@@ -85,15 +88,33 @@ export default class icicleBicycle extends Component {
                   if (request.status === 200) {
 
                     var responseJson = JSON.parse(request.responseText);
-                    var titleM = nickName + "'s Gallery";
+                    var titleM = 'Gallery';
 
-                    navigator.push({
-        			  wordTitle: titleM,		
-                      title: 'Gallery',
-                      index: 3,
-                      outline: 'true',
-                      galleryData: responseJson.resources
-                    })
+                    getUserInfo(function(userInfo, err){
+
+						if(!userInfo || userInfo.loggedIn === false){
+							console.log('hey*************', userInfo);
+							 navigator.push({
+		        			  wordTitle: titleM,		
+		                      title: 'Gallery',
+		                      index: 3,
+		                      outline: 'true',
+		                      galleryData: responseJson.resources
+		                    })
+							return;
+						}else{
+ 							titleM = userInfo.nickName + "'s Gallery";
+							 navigator.push({
+		        			  wordTitle: titleM,		
+		                      title: 'Gallery',
+		                      index: 3,
+		                      outline: 'true',
+		                      galleryData: responseJson.resources
+		                    })
+						}
+					});
+
+                   
                   
                   } else {
                     console.warn('error');
@@ -239,6 +260,7 @@ class MyScene extends Component {
 
 
     else{
+
       return (
         <View>
         <View style ={{flex: 1}}>
@@ -264,6 +286,7 @@ class MyScene extends Component {
           <Button  text='Add Image' value = "NORMAL RAISED" raised={true} onPress={this.props.onAddImage}>
           </Button>
           <Button  text='Log Out' value = "NORMAL RAISED" raised={true} onPress={function(){
+          	setUserInfo(null);
           	lock.show({}, loginCallback)}}>
           </Button>
           </View>
@@ -279,19 +302,48 @@ function loginCallback(err, profile, token){
 	    return false;
 	  }
 	  // Authentication worked!
-	  userId = profile.userId;
-	  nickName = profile.nickname;
-	  idToken = token.idToken;
+	  var userInfo = {};
+	  userInfo.userId = profile.userId;
+	  userInfo.nickName = profile.nickname;
+	  userInfo.idToken = token.idToken;
+	  userInfo.loggedIn = true;
+	  setUserInfo(userInfo, function(userInfo, error){
+	  	console.log(userInfo);
+	  	if(error){
+	  		console.log('Error: ', error);
+	  	}
+	  });
+
 	 // console.log('Logged in with Auth0!');
-	  //console.log('Profile: ', profile);
-	  //console.log('Token: ', token);
-	  loggedIn = true;
+	  console.log('Profile: ', profile);
+	  console.log('Token: ', token);
 	  return true;
 
 
 	};
  
+async function setUserInfo(userInfo, callback){
+	try{
+		userInfo = JSON.stringify(userInfo);
+		await AsyncStorage.setItem('@IceBikeUserInfo', userInfo);
+		callback(userInfo);
+	}catch(error){
+		console.log('Problem storing user info');
+		callback(userInfo, error);
+	}
 
+}
+async function getUserInfo(callback){
+	try{
+		var userInfo = await AsyncStorage.getItem('@IceBikeUserInfo');
+		userInfo = JSON.parse(userInfo);
+		callback(userInfo);
+	}catch(error){
+		console.log('Problem getting userInfo');
+		callback(userInfo, false)
+	}
+
+}
 
 const styles = StyleSheet.create({
   container: {
