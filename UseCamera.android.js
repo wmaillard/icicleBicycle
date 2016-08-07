@@ -1,5 +1,5 @@
 import React, { Component, PropTypes} from 'react';
-import { View, Text, StyleSheet,   Dimensions, Navigator, Image } from 'react-native';
+import { View, Text, StyleSheet,   Dimensions, Navigator, Image, AsyncStorage} from 'react-native';
 import Camera from 'react-native-camera';
 
 import { Button, Card, Toolbar } from 'react-native-material-design';
@@ -10,6 +10,7 @@ import GL from 'gl-react';
 import {HelloGL} from './helloGL';
 
 import ImageRotate from 'react-native-image-rotate';
+import {setUserInfo, getUserInfo} from './asyncStorage';
 
 
 
@@ -189,6 +190,12 @@ export default class UseCamera extends Component {
 
   }
   takePicture() {
+    getUserInfo(function(userInfo, err){
+      console.log('&&&&&&&&&&&&&', userInfo);
+      if(err){
+        console.log('Error: ', err);
+      }
+    });
     var uploadPic = this.uploadPic;
     var goBack = this.props.onBack;
     var push = this.props.globalNavigator.push;
@@ -217,8 +224,6 @@ export default class UseCamera extends Component {
       .catch(err => console.error(err));
   }
 }
-
-
 
 
 
