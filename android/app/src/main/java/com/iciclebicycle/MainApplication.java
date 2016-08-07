@@ -11,6 +11,7 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
 import com.lwansbrough.RCTCamera.*;
 import com.projectseptember.RNGL.RNGLPackage;
+import com.auth0.lock.react.LockReactPackage;
 
 
 
@@ -31,7 +32,8 @@ public class MainApplication extends Application implements ReactApplication {
           new MainReactPackage(),
             new CameraRollPackage(),
           new RCTCameraPackage(),
-              new RNGLPackage()
+              new RNGLPackage(),
+              new LockReactPackage()
       );
     }
   };

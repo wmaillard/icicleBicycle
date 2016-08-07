@@ -19,6 +19,10 @@ import { Button, Card, Toolbar } from 'react-native-material-design';
 import UseCamera from './UseCamera.android';
 import Scenes from './Scenes.android';
 import Camera from 'react-native-camera';
+
+var Auth0Lock = require('react-native-lock');
+var lock = new Auth0Lock({clientId: '4ZoVxGUVM5bFO0PA8C6xk409IbRl6JO0', domain: 'maillard.auth0.com'});
+
 const base64 = require('base-64');
 
 
@@ -26,22 +30,33 @@ var username = '717148529973165';
 var password = 'xAEaowxg95A2fpNk-yUVvULqOiA';
 var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/resources/image?max_results=100';
 
+var nickName = '';
+var userId = '';
+var idToken = '';
+var loggedIn = false;
 
+
+
+if(loggedIn === false){
+  	lock.show({}, loginCallback);
+}
 
 export default class icicleBicycle extends Component {
-  render() {
-   
+	  render() {
+	  	
+
 
     return (
 
     
       <Navigator
         style={{flex: 1, backgroundColor: 'powderblue'}}
-        initialRoute={{ title: 'Home Page', index: 0, body: null, outline: 'true'}}
+        initialRoute={{wordTitle: 'PhotoShare', title: 'PhotoShare', index: 0, body: null, outline: 'true'}}
         renderScene={(route, navigator) =>
         <MyScene
             outline={route.outline}
-            style={{flex: 1, backgroundColor: 'powserblue'}}
+            style={{flex: 1, backgroundColor: 'powderblue'}}
+            wordTitle={route.wordTitle}
             title={route.title}
             body = {route.body}
             galleryData = {route.galleryData}
@@ -70,8 +85,10 @@ export default class icicleBicycle extends Component {
                   if (request.status === 200) {
 
                     var responseJson = JSON.parse(request.responseText);
+                    var titleM = nickName + "'s Gallery";
 
                     navigator.push({
+        			  wordTitle: titleM,		
                       title: 'Gallery',
                       index: 3,
                       outline: 'true',
@@ -148,12 +165,14 @@ class MyScene extends Component {
     onBack: PropTypes.func,
     body: PropTypes.element,
     outline: PropTypes.string,
-    galleryData: PropTypes.array
+    galleryData: PropTypes.array,
+    wordTitle: PropTypes.string
 
   }
 
   render() {
     if(this.props.title === 'Gallery'){
+    	console.log('****************', this.props.wordTitle);
         var data = this.props.galleryData;
 
         var reduceQuality = function(uri){
@@ -192,7 +211,7 @@ class MyScene extends Component {
 
           <View style ={{flex: 1}}>
           <View style ={{flex: 1}}>
-            <Toolbar title={'Gallery'} icon={'arrow-back'} onIconPress={this.props.onBack} />
+            <Toolbar title={this.props.wordTitle} icon={'arrow-back'} onIconPress={this.props.onBack} />
             </View>
 
           <ListView contentContainerStyle = {{justifyContent: 'center', alignItems: 'center'}}
@@ -223,7 +242,8 @@ class MyScene extends Component {
       return (
         <View>
         <View style ={{flex: 1}}>
-          <Toolbar title={'Photo Share'} />
+          <Toolbar title={this.props.title}>
+          </Toolbar>
         </View>
         <View style ={{flex: 9}}>
           <Card>
@@ -243,6 +263,9 @@ class MyScene extends Component {
           </Button>
           <Button  text='Add Image' value = "NORMAL RAISED" raised={true} onPress={this.props.onAddImage}>
           </Button>
+          <Button  text='Log Out' value = "NORMAL RAISED" raised={true} onPress={function(){
+          	lock.show({}, loginCallback)}}>
+          </Button>
           </View>
         </View>
       )
@@ -250,7 +273,23 @@ class MyScene extends Component {
   }
 }
 
+function loginCallback(err, profile, token){
+	  if (err) {
+	    console.log(err);
+	    return false;
+	  }
+	  // Authentication worked!
+	  userId = profile.userId;
+	  nickName = profile.nickname;
+	  idToken = token.idToken;
+	 // console.log('Logged in with Auth0!');
+	  //console.log('Profile: ', profile);
+	  //console.log('Token: ', token);
+	  loggedIn = true;
+	  return true;
 
+
+	};
  
 
 

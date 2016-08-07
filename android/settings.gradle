@@ -1,6 +1,12 @@
 rootProject.name = 'icicleBicycle'
 
 include ':app'
+include ':react-native-lock'
+project(':react-native-lock').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-lock/android')
+include ':react-native-image-rotate'
+project(':react-native-image-rotate').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-image-rotate/android')
+include ':gl-react-native'
+project(':gl-react-native').projectDir = new File(rootProject.projectDir, '../node_modules/gl-react-native/android')
 include ':rn-camera-roll'
 project(':rn-camera-roll').projectDir = new File(rootProject.projectDir, '../node_modules/rn-camera-roll/android')
 include ':react-native-camera'

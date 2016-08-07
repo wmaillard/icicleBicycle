@@ -133,9 +133,17 @@ android {
             }
         }
     }
+    //auth0 stuff
+    packagingOptions {
+    exclude 'META-INF/LICENSE'
+    exclude 'META-INF/NOTICE'
+}
+
 }
 
 dependencies {
+    compile project(':react-native-lock')
+    compile project(':react-native-image-rotate')
     compile project(':rn-camera-roll')
     compile project(':react-native-camera')
     compile fileTree(dir: "libs", include: ["*.jar"])

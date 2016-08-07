@@ -9,6 +9,7 @@ import {Surface} from "gl-react-native";
 import GL from 'gl-react';
 import {HelloGL} from './helloGL';
 
+import ImageRotate from 'react-native-image-rotate';
 
 
 
@@ -43,10 +44,20 @@ void main () {
     `
   }
   var img = {uri: this.props.uri};
+/*  ImageRotate.rotateImage(
+    'https://upload.wikimedia.org/wikipedia/en/5/56/Warcraft_Teaser_Poster.jpg',
+    90,
+    (uri) => {
+      img.uri = uri;
+    },
+    (error) => {
+      console.error(error);
+    })
+
   var factor = 4;
   if(this.props.filter === '1'){
      factor = 1;
-}
+}*/
 
 
 
@@ -61,16 +72,14 @@ void main () {
 
 
       <View style ={{flex: 10}}>
-        <Surface  width={400} height={500} ref = 'theImg'>
+        <Surface  width={400} height={400} ref = 'theImg'>
           <GL.Node shader = {helloGL}
-            uniforms = {{factor: 3, image: img}}
+            uniforms = {{factor: 8, image: img}}
           />
         </Surface>
                 <View style ={{flexDirection: 'row'}}>
-        <Button style={{flex:1}} text='Save and Upload' value = "NORMAL RAISED" raised={true} onPress = {this.capture.bind(this)} >
-          </Button>
-                <Button style={{flex:1}} text='Filter 2' value = "NORMAL RAISED" raised={true} onPress = {this.filter2.bind(this)}>
-          </Button>
+        <Button style={{flex:1}} text='Save and Upload' value = "NORMAL RAISED" raised={true} onPress = {this.capture.bind(this)} />
+
         </View>
       </View>
 
