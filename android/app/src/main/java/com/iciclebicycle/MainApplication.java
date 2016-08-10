@@ -13,7 +13,7 @@ import com.lwansbrough.RCTCamera.*;
 import com.projectseptember.RNGL.RNGLPackage;
 import com.auth0.lock.react.LockReactPackage;
 
-
+import io.codebakery.imagerotate.ImageRotatePackage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +33,8 @@ public class MainApplication extends Application implements ReactApplication {
             new CameraRollPackage(),
           new RCTCameraPackage(),
               new RNGLPackage(),
-              new LockReactPackage()
+              new LockReactPackage(),
+              new ImageRotatePackage()
       );
     }
   };

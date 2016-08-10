@@ -9,6 +9,7 @@ import {Surface} from "gl-react-native";
 import GL from 'gl-react';
 import {HelloGL} from './helloGL';
 
+import ImageRotate from 'react-native-image-rotate'; //To fix the Samsung bugs that takes images sideways
 
 import {setUserInfo, getUserInfo} from './asyncStorage';
 var t = require('tcomb-form-native');
@@ -115,7 +116,6 @@ void main () {
     this.refs.theImg
     .captureFrame(captureConfig)
     .then(captured =>{ 
-      console.log(captured);
       this.uploadPic(captured, photoDescription);
       this.setState({ captured, captureConfig })});
   }
@@ -133,8 +133,6 @@ void main () {
 
           if(xhr.status === 200){
             getUserInfo(function(userInfo, err){
-              console.log('userinfo: ');
-              console.log(userInfo);
               if(err){
                 console.log('Error: ', err);
               }else{
@@ -231,24 +229,27 @@ export default class UseCamera extends Component {
     this.camera.capture()
       .then(function(data){
         var path = data.path;
-        console.log(data);
+        ImageRotate.rotateImage(
+          path,
+          90,
+          (uri) =>{
 
-        push({
-                  title: 'Preview',
-                  body: <Preview onBack = {() => {
-                    navigator.pop()}} globalNavigator = {navigator} 
-                    uri = {path} />,
-                  index: 4,
-                  outline: 'false', 
-                })
-        //goBack();
+            push({
+                      title: 'Preview',
+                      body: <Preview onBack = {() => {
+                        navigator.pop()}} globalNavigator = {navigator} 
+                        uri = {uri} />,
+                      index: 4,
+                      outline: 'false', 
+                    })
+        },
+        (error) => {
+          console.log('Error:' + error);
+        }
 
-        //goBack();
+        )}
 
-
-       //navigator.pop();
-
-        })
+        )
       .catch(err => console.error(err));
   }
 }
@@ -266,7 +267,6 @@ async function postPhoto(token, photoInfo, callback) {
   })
   .then(function(response){
     if(response.ok){
-      console.log('hurray!!!!!!')
       callback();
     }
     else{
