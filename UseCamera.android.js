@@ -69,7 +69,7 @@ void main () {
       <ScrollView style ={{flex: 8}}>
         <Surface  width={400} height={400} ref = 'theImg'>
           <GL.Node shader = {helloGL}
-            uniforms = {{factor: 8, image: img}}
+            uniforms = {{factor: 3, image: img}}
           />
         </Surface>
                 <View style ={{flexDirection: 'row'}}>
@@ -190,13 +190,13 @@ export default class UseCamera extends Component {
     return (
     <View style ={{flex: 1}}>
 
-      <View style ={{flex: 1}}>
+      <View style ={{flex: 2}}>
             <Toolbar title={'Upload a Photo'} icon={'arrow-back'} onIconPress={this.props.onBack} />
       </View>
   
 
       <Camera 
-      	style = {{flex: 10}}
+      	style = {{flex: 8}}
         ref={(cam) => {
           this.camera = cam;
         }}
@@ -205,11 +205,12 @@ export default class UseCamera extends Component {
         captureQuality = {Camera.constants.CaptureQuality.low}
         orientation = {Camera.constants.Orientation.portrait}>
 
-        <View style={{flex:5}}/>
-        <Button style={{flex:1}} text='Take Picture and Upload' value = "NORMAL RAISED" raised={true} onPress={this.takePicture.bind(this)}>
-        </Button>
-
       </Camera>
+
+      <View style={{flex:2}}>
+        <Button style={{flex:1}} text='Take Picture and Upload' value = "NORMAL RAISED" raised={true} onPress={this.takePicture.bind(this)}/>
+      </View>
+
       </View>
 
 
