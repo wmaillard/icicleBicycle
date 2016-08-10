@@ -10,7 +10,8 @@ import {
     Navigator,
     Image,
     AsyncStorage,
-    ScrollView
+    ScrollView,
+    Slider
 } from 'react-native';
 import Camera from 'react-native-camera';
 
@@ -37,8 +38,22 @@ var Form = t.form.Form;
 var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/image/upload';
 var up_preset = 'fty1rxtk';
 var myServerURL = 'http://photorest666.herokuapp.com';
+import filters from './filters';
 
 export default class Preview extends Component {
+	constructor (props){
+		super(props);
+		this.state = {userFilter: filters.saturate, 
+						filterLevel: 1,
+						filter: {
+							saturate: true,
+							hue: false,
+							blur: false,
+						},
+					uniforms: {factor: 1, image: this.props.uri}
+
+					};
+	}
 
     static propTypes = {
         onBack: PropTypes.func,
@@ -49,20 +64,7 @@ export default class Preview extends Component {
     }
     render() {
         //Saturation filter taken from gl-react-native example pages
-        helloGL = {
-            frag: `
-precision highp float;
-varying vec2 uv;
-uniform sampler2D image;
-uniform float factor;
-void main () {
-  vec4 c = texture2D(image, uv);
-  // Algorithm from Chapter 16 of OpenGL Shading Language
-  const vec3 W = vec3(0.2125, 0.7154, 0.0721);
-  gl_FragColor = vec4(mix(vec3(dot(c.rgb, W)), c.rgb, factor), c.a);
-}
-    `
-        }
+
         var img = {
             uri: this.props.uri
         };
@@ -82,23 +84,39 @@ void main () {
 
 
 
-      <ScrollView style ={{flex: 8}}>
-        <Surface  width={400} height={400} ref = 'theImg'>
-          <GL.Node shader = {helloGL}
-            uniforms = {{factor: 3, image: img}}
+      <ScrollView style ={{flex: 10}} contentContainerStyle = {{alignItems: 'center'}}>
+        <Surface  width={275} height={375} ref = 'theImg'>
+          <GL.Node shader = {this.state.userFilter}
+            uniforms = {this.state.uniforms}
           />
         </Surface>
-                <View style ={{flexDirection: 'row'}}>
+                
 
-      <View style ={{flex: 4}}>
+      <View style ={{ flexDirection: 'row'}}>     
+      <Button style={{flex:1}} text='Hue' value = "NORMAL RAISED" raised={!this.state.filter.hue} onPress = {this.addFilter.bind({old: this, filterSelected: 'hue'})} />
+            <Button style={{flex:1}} text='Saturate' value = "NORMAL RAISED" raised={!this.state.filter.saturate} onPress = {this.addFilter.bind({old: this, filterSelected: 'saturate'})} />
+                  <Button style={{flex:1}} text='Blur' value = "NORMAL RAISED" raised={!this.state.filter.blur} onPress = {this.addFilter.bind({old: this, filterSelected: 'blur'})} />
+
+      </View>
+      <View>
+        <Text style={styles.filterText} >
+          {this.state.filterLevel && +this.state.filterLevel.toFixed(3) * 10 / 8}
+        </Text>
+      	<Slider style = {{height: 10, width: 300}} minimumValue = {0} step = {.5} maximumValue = {10} value = {this.state.filterLevel * 10/8} onValueChange = {(value) =>{var saturation = .8* value; this.setState({filterLevel: saturation})}}/>
+      	<Text style= {styles.filterText} >Filter Strength </Text>
+      	</View>
+
+
+      <View style= {{padding: 40}}>
+
         <Form
           ref="form"
           type={imageDescription}
         />
-        <Button style={{flex:1}} text='Save and Upload' value = "NORMAL RAISED" raised={true} onPress = {this.capture.bind(this)} />
+        <Button text='Save and Upload' value = "NORMAL RAISED" raised={true} onPress = {this.capture.bind(this)} />
 
-        </View>
-      </View>
+     </View>
+      
 
 
 
@@ -107,6 +125,20 @@ void main () {
     </View>
 
         )
+    }
+    addFilter(){
+    	console.log(this.filterSelected);
+
+    	var newState = {};
+    	newState.filter = {}
+    	newState.filter.blur = false;
+    	newState.filter.saturate = false;
+    	newState.filter.hue = false;
+    	newState.filter[this.filterSelected] = true;
+    	newState.userFilter = filters[this.filterSelected];
+
+
+    	this.old.setState(newState)
     }
     filter2() {
         var path = this.props.uri;
@@ -215,7 +247,7 @@ export default class UseCamera extends Component {
         }}
         aspect={Camera.constants.Aspect.fill}
         captureTarget ={Camera.constants.CaptureTarget.disk}
-        captureQuality = {Camera.constants.CaptureQuality.low}
+        captureQuality = {Camera.constants.CaptureQuality.med}
         orientation = {Camera.constants.Orientation.portrait}>
 
       </Camera>
@@ -248,7 +280,7 @@ export default class UseCamera extends Component {
 
                             push({
                                 title: 'Preview',
-                                body: < Preview onBack = {
+                                body: <Preview onBack = {
                                     () => {
                                         navigator.pop()
                                     }
@@ -323,4 +355,10 @@ const styles = StyleSheet.create({
     image: {
         flex: 10,
     },
+    filterText: {
+    fontSize: 14,
+    textAlign: 'center',
+    fontWeight: '500',
+    margin: 10,
+  }
 });
