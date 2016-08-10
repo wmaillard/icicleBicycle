@@ -46,14 +46,15 @@ export default class Preview extends Component {
 		this.state = {userFilter: filters.saturate, 
 						filterLevel: 1,
 						filter: {
-							saturate: true,
-							hue: false,
-							blur: false,
+							saturate: false,
+							contrast: true,
+							brighten: false,
 						},
-					uniforms: {factor: 1, image: this.props.uri}
+					uniforms: {factor: 1,  image: this.props.uri}
 
-					};
+					
 	}
+}
 
     static propTypes = {
         onBack: PropTypes.func,
@@ -93,16 +94,28 @@ export default class Preview extends Component {
                 
 
       <View style ={{ flexDirection: 'row'}}>     
-      <Button style={{flex:1}} text='Hue' value = "NORMAL RAISED" raised={!this.state.filter.hue} onPress = {this.addFilter.bind({old: this, filterSelected: 'hue'})} />
+      		<Button style={{flex:1}} text='Contrast' value = "NORMAL RAISED" raised={!this.state.filter.contrast} onPress = {this.addFilter.bind({old: this, filterSelected: 'contrast'})} />
             <Button style={{flex:1}} text='Saturate' value = "NORMAL RAISED" raised={!this.state.filter.saturate} onPress = {this.addFilter.bind({old: this, filterSelected: 'saturate'})} />
-                  <Button style={{flex:1}} text='Blur' value = "NORMAL RAISED" raised={!this.state.filter.blur} onPress = {this.addFilter.bind({old: this, filterSelected: 'blur'})} />
+            <Button style={{flex:1}} text='Brighten' value = "NORMAL RAISED" raised={!this.state.filter.brighten} onPress = {this.addFilter.bind({old: this, filterSelected: 'brighten'})} />
 
       </View>
       <View>
         <Text style={styles.filterText} >
-          {this.state.filterLevel && +this.state.filterLevel.toFixed(3) * 10 / 8}
+          {this.state.filterLevel && +this.state.filterLevel.toFixed(3)}
         </Text>
-      	<Slider style = {{height: 10, width: 300}} minimumValue = {0} step = {.5} maximumValue = {10} value = {this.state.filterLevel * 10/8} onValueChange = {(value) =>{var saturation = .8* value; this.setState({filterLevel: saturation})}}/>
+      	<Slider style = {{height: 10, width: 300}} minimumValue = {0} step = {1} maximumValue = {10} value = {this.state.filterLevel} onValueChange = {
+      		(value) =>{var factor = value * 8 / 10; 
+      			console.log(factor); 
+      			var state = {};
+      			state.uniforms = {};
+      			state.filterLevel = value;
+      			state.uniforms.image = this.props.uri;
+
+
+      			state.uniforms.factor = value * 8 / 10;
+
+      			this.setState(state)
+      		}}/>
       	<Text style= {styles.filterText} >Filter Strength </Text>
       	</View>
 
@@ -131,9 +144,9 @@ export default class Preview extends Component {
 
     	var newState = {};
     	newState.filter = {}
-    	newState.filter.blur = false;
+    	newState.filter.brighten = false;
     	newState.filter.saturate = false;
-    	newState.filter.hue = false;
+    	newState.filter.contrast = false;
     	newState.filter[this.filterSelected] = true;
     	newState.userFilter = filters[this.filterSelected];
 
@@ -253,7 +266,7 @@ export default class UseCamera extends Component {
       </Camera>
 
       <View style={{flex:2}}>
-        <Button style={{flex:1}} text='Take Picture and Upload' value = "NORMAL RAISED" raised={true} onPress={this.takePicture.bind(this)}/>
+        <Button style={{flex:1}} text='Take Picture' value = "NORMAL RAISED" raised={true} onPress={this.takePicture.bind(this)}/>
       </View>
 
       </View>
