@@ -1,5 +1,5 @@
 import React, { Component, PropTypes} from 'react';
-import { View, Text, StyleSheet,   Dimensions, Navigator, Image, AsyncStorage} from 'react-native';
+import { View, Text, StyleSheet,   Dimensions, Navigator, Image, AsyncStorage, ScrollView} from 'react-native';
 import Camera from 'react-native-camera';
 
 import { Button, Card, Toolbar } from 'react-native-material-design';
@@ -9,14 +9,15 @@ import {Surface} from "gl-react-native";
 import GL from 'gl-react';
 import {HelloGL} from './helloGL';
 
-import ImageRotate from 'react-native-image-rotate';
+
 import {setUserInfo, getUserInfo} from './asyncStorage';
+var t = require('tcomb-form-native');
 
 
-
+var Form = t.form.Form;
 var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/image/upload';
 var up_preset = 'fty1rxtk';
-
+var myServerURL = 'http://photorest666.herokuapp.com';
 
 
 export default class Preview extends Component {
@@ -30,7 +31,7 @@ export default class Preview extends Component {
 
   }
   render(){
-
+//Saturation filter taken from gl-react-native example pages
      helloGL = {frag: `
 precision highp float;
 varying vec2 uv;
@@ -45,23 +46,15 @@ void main () {
     `
   }
   var img = {uri: this.props.uri};
-/*  ImageRotate.rotateImage(
-    'https://upload.wikimedia.org/wikipedia/en/5/56/Warcraft_Teaser_Poster.jpg',
-    90,
-    (uri) => {
-      img.uri = uri;
-    },
-    (error) => {
-      console.error(error);
-    })
 
-  var factor = 4;
-  if(this.props.filter === '1'){
-     factor = 1;
-}*/
+  var imageDescription = t.struct({
+  title: t.maybe(t.String),              // a required string
+  location: t.maybe(t.String),  // an optional string
+});
 
 
-
+      
+  
     return (
     <View  style ={{flex: 1}}>
     
@@ -72,17 +65,27 @@ void main () {
 
 
 
-      <View style ={{flex: 10}}>
+      <ScrollView style ={{flex: 8}}>
         <Surface  width={400} height={400} ref = 'theImg'>
           <GL.Node shader = {helloGL}
             uniforms = {{factor: 8, image: img}}
           />
         </Surface>
                 <View style ={{flexDirection: 'row'}}>
+
+      <View style ={{flex: 4}}>
+        <Form
+          ref="form"
+          type={imageDescription}
+        />
         <Button style={{flex:1}} text='Save and Upload' value = "NORMAL RAISED" raised={true} onPress = {this.capture.bind(this)} />
 
         </View>
       </View>
+
+
+
+      </ScrollView>
 
     </View>
 
@@ -102,6 +105,8 @@ void main () {
           })
   }
   capture(uri){
+    var photoDescription = this.refs.form.getValue();
+
    const captureConfig = {
     quality: 1,
       type: "jpg",
@@ -111,13 +116,13 @@ void main () {
     .captureFrame(captureConfig)
     .then(captured =>{ 
       console.log(captured);
-      this.uploadPic(captured);
+      this.uploadPic(captured, photoDescription);
       this.setState({ captured, captureConfig })});
   }
-   uploadPic(uri){
-    var xhr = new XMLHttpRequest();
+   uploadPic(uri, photoDescription){
+        var xhr = new XMLHttpRequest();
         var body = new FormData();
-        body.append('upload_preset', up_preset);
+        body.append('upload_preset', up_preset); 
         body.append('file', uri);//{uri: uri, type: "image/jpg", name: 'name'});
         xhr.open('POST', serverUrl);
         xhr.send(body);
@@ -125,13 +130,39 @@ void main () {
           if(xhr.readyState !==4){
             return;
           }
-          if(xhr.status === 200){
 
-            alert('Successfully uploaded your photo');
-            var res = JSON.parse(xhr.responseText);
-            console.log(res);
+          if(xhr.status === 200){
+            getUserInfo(function(userInfo, err){
+              console.log('userinfo: ');
+              console.log(userInfo);
+              if(err){
+                console.log('Error: ', err);
+              }else{
+                var photoData = {};
+                var res = JSON.parse(xhr.responseText);
+                photoData.location = photoDescription.location;
+                photoData.title = photoDescription.title;
+                photoData.id = res.public_id;
+                photoData.url = res.url;
+                photoData.userId = userInfo.id;
+
+                console.log('#################');
+                console.log('Token:');
+                console.log(userInfo.token);
+                postPhoto(userInfo.token, photoData, function(err){
+                  if(err){
+                    alert('Uploading your image failed :(: ' + err);
+                  }
+                  else alert('Successfully uploaded your photo');
+                });
+
+
+              }
+            });
+
 
           }else{
+
             console.log('******************');
             console.log(xhr.responseText);
             alert('Uploading your image failed :(')
@@ -139,6 +170,8 @@ void main () {
 
           }
         }
+        this.props.globalNavigator.pop();
+        this.props.globalNavigator.pop();
 
 
   }
@@ -171,7 +204,7 @@ export default class UseCamera extends Component {
         }}
         aspect={Camera.constants.Aspect.fill}
         captureTarget ={Camera.constants.CaptureTarget.disk}
-        captureQuality = {Camera.constants.CaptureQuality.med}
+        captureQuality = {Camera.constants.CaptureQuality.low}
         orientation = {Camera.constants.Orientation.portrait}>
 
         <View style={{flex:5}}/>
@@ -190,12 +223,7 @@ export default class UseCamera extends Component {
 
   }
   takePicture() {
-    getUserInfo(function(userInfo, err){
-      console.log('&&&&&&&&&&&&&', userInfo);
-      if(err){
-        console.log('Error: ', err);
-      }
-    });
+
     var uploadPic = this.uploadPic;
     var goBack = this.props.onBack;
     var push = this.props.globalNavigator.push;
@@ -225,7 +253,33 @@ export default class UseCamera extends Component {
   }
 }
 
+async function postPhoto(token, photoInfo, callback) {
 
+  fetch(myServerURL + '/photo', {
+    method: "POST",
+    headers: {
+      'Content-Type' : 'application/json',
+      'Authorization': 'Bearer ' + token
+
+    },
+    body: JSON.stringify(photoInfo)
+  })
+  .then(function(response){
+    if(response.ok){
+      console.log('hurray!!!!!!')
+      callback();
+    }
+    else{
+      callback('Network response was not 200');
+      console.log(response);
+    }
+
+  })
+  .catch(function(error){
+    callback('Error: ' + error)
+  })
+  .done();
+}
 
 
 

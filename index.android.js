@@ -12,17 +12,21 @@ import {
   ScrollView,
   BackAndroid,
   ListView,
-  AsyncStorage
+  AsyncStorage,
+  Modal
 } from 'react-native';
 
 import { Button, Card, Toolbar } from 'react-native-material-design';
 
-import UseCamera from './UseCamera.android';
+import UseCamera from './UseCamera.android';  //These have to be capitalized, stop forgetting
 import Scenes from './Scenes.android';
 import Camera from 'react-native-camera';
+import EditPhoto from './editPhoto.android';
 
 var Auth0Lock = require('react-native-lock');
 var lock = new Auth0Lock({clientId: '4ZoVxGUVM5bFO0PA8C6xk409IbRl6JO0', domain: 'maillard.auth0.com'});
+var t = require('tcomb-form-native');
+var Form = t.form.Form;
 
 const base64 = require('base-64');
 
@@ -30,7 +34,9 @@ const base64 = require('base-64');
 var username = '717148529973165';
 var password = 'xAEaowxg95A2fpNk-yUVvULqOiA';
 var serverUrl = 'https://api.cloudinary.com/v1_1/ochemaster/resources/image?max_results=100';
+var myServerURL = 'http://photorest666.herokuapp.com';
 
+var globalNavigator = {};
 /*var nickName = 'wmaillard';
 var userId = 'auth0|57a64bc925e541296cf59303';
 var idToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL21haWxsYXJkLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1N2E2NGJjOTI1ZTU0MTI5NmNmNTkzMDMiLCJhdWQiOiI0Wm9WeEdVVk01YkZPMFBBOEM2eGs0MDlJYlJsNkpPMCIsImV4cCI6MTQ3MDYzNDc4NCwiaWF0IjoxNDcwNTk4Nzg0fQ.WO8_x-8vpTJk4oVwY9xAsEQBGK3Vrf8TfblCISit80U';
@@ -63,10 +69,15 @@ export default class icicleBicycle extends Component {
             title={route.title}
             body = {route.body}
             galleryData = {route.galleryData}
+            userData = {route.userData}
+            userInfo = {route.userInfo}
+            photoData = {route.photoData}
+            globalNavigator = {route.globalNavigator}
+
 
             // Function to call when a new scene should be displayed           
             onGallery ={ () => {
-                console.log(typeof navigator);
+            	globalNavigator = navigator;
                 BackAndroid.addEventListener('hardwareBackPress', function() {
                    navigator.pop();
                    return true;
@@ -84,50 +95,98 @@ export default class icicleBicycle extends Component {
                   if (request.readyState !== 4) {
                     return;
                   }
+                  getUserInfo(function(userInfo, err){
 
-                  if (request.status === 200) {
+                     console.log('hey*************', userInfo);
+                    
+                    
 
-                    var responseJson = JSON.parse(request.responseText);
-                    var titleM = 'Gallery';
+                  fetch(myServerURL + '/user/' + userInfo.id, {
+                    method: "GET",
+                    headers: {
+                      'Content-Type' : 'application/json',
+                      'Authorization': 'Bearer ' + userInfo.token,
+                      'Data-Type': 'application/json'
 
-                    getUserInfo(function(userInfo, err){
+                    }
+                  })
+                  .then(function(response){
+                    if(response.ok){
+                      console.log('hurray!!!!!!');
+                      console.log(response._bodyText);
+                      var userData = JSON.parse(response._bodyText);
+                      console.log(userData);
+                      var titleM = userInfo.nickName + "'s Gallery";
+                      var photosData = [];
+                      if(userData.photos.length === 0){
 
-						if(!userInfo || userInfo.loggedIn === false){
-							console.log('hey*************', userInfo);
-							 navigator.push({
-		        			  wordTitle: titleM,		
-		                      title: 'Gallery',
-		                      index: 3,
-		                      outline: 'true',
-		                      galleryData: responseJson.resources
-		                    })
-							return;
-						}else{
- 							titleM = userInfo.nickName + "'s Gallery";
-							 navigator.push({
-		        			  wordTitle: titleM,		
-		                      title: 'Gallery',
-		                      index: 3,
-		                      outline: 'true',
-		                      galleryData: responseJson.resources
-		                    })
-						}
-					});
-
-                   
-                  
-                  } else {
-                    console.warn('error');
-                    console.log('************request******************');
-                    console.log(request);
-                    console.warn(request.responseText);
-                  }
-                };
+                      	navigator.push({
+                            wordTitle: titleM,    
+                            title: 'Gallery',
+                            index: 3,
+                            outline: 'true',
+                            galleryData: [],
+                            userInfo: userInfo,
+                            globalNavigator: {navigator}
+                                })
+                            }
 
 
+                      else{
+                      for(var i = 0; i < userData.photos.length; i++){
+
+                        fetch(myServerURL + '/photo/' + userData.photos[i], {
+                          method: "GET",
+                          headers: {
+                          'Content-Type' : 'application/json',
+                          'Authorization': 'Bearer ' + userInfo.token,
+                          'Data-Type': 'application/json'
+
+                          }
+                        })
+                      .then(function(response){
+                        if(response.ok){
+                          var photoD = JSON.parse(response._bodyText);
+                          photosData.push(photoD);
+                          console.log('photoD: ', photoD);
+                          if(photosData.length == userData.photos.length){
+                          	console.log('Navigator: ')
+                          	console.log(navigator);
+                            navigator.push({
+	                            wordTitle: titleM,    
+	                            title: 'Gallery',
+	                            index: 3,
+	                            outline: 'true',
+	                            galleryData: photosData,
+	                            userInfo: userInfo,
+	                            globalNavigator: {navigator}
+                            })
+
+                          }
+                        }
+                      })
+                    }
 
 
-            }}
+
+                      return;
+
+
+                    }
+                }
+                    else{
+                      console.log('Network response was not 200');
+                      console.log(response);
+                    }
+                  })
+                  .catch(function(error){
+                    console.log('Error: ' + error)
+                  })
+                  .done();
+            })
+          						
+					}}
+        }
 
             onAddImage ={ () => {
                   BackAndroid.addEventListener('hardwareBackPress', function() {
@@ -165,12 +224,6 @@ export default class icicleBicycle extends Component {
     )
   }
 }
-class Gallery extends Component {
-
-
-
-
-}
 
 
 
@@ -187,14 +240,20 @@ class MyScene extends Component {
     body: PropTypes.element,
     outline: PropTypes.string,
     galleryData: PropTypes.array,
-    wordTitle: PropTypes.string
-
+    wordTitle: PropTypes.string,
+    userData: PropTypes.object,
+    userInfo: PropTypes.object,
+    globalNavigator: PropTypes.object
   }
 
+
+      //This is how you refresh views, finally found it!  Sets state and refreshes referenced data
+
+  
   render() {
     if(this.props.title === 'Gallery'){
     	console.log('****************', this.props.wordTitle);
-        var data = this.props.galleryData;
+
 
         var reduceQuality = function(uri){
           console.log('****************************', uri);
@@ -216,30 +275,102 @@ class MyScene extends Component {
 
 
 
-        var urls = [];
-        for(var i = 0; i < data.length; i++){
-          urls.push(data[i].url);
-        }
+
 
         const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => {
           r1 !== r2}});
         this.state = {
-          dataSource: ds.cloneWithRows(urls)
+          dataSource: ds.cloneWithRows(this.props.galleryData),
+          modalVisible: false
         };
+
+        function deletePhoto(){
+			console.log('^^^^^^^^^^^^');
+			alert('Deleted your photo with id: '+ this.id);
+			this.goBack();
+            fetch(myServerURL + '/photo/' + this.id, {
+              method: "Delete",
+              headers: {
+              'Content-Type' : 'application/json',
+              'Authorization': 'Bearer ' + this.userInfo.token,
+              'Data-Type': 'application/json'
+
+              }
+            })
+          .then(function(response){
+            if(response.ok){
+              console.log('Deleted Photo');
+          }else{
+          	console.log('Error: ', response)
+          }
+      })
+			
+
+		}
+
+
+
+	function editPhotoButton() {
+
+          /*		onBack: PropTypes.func,
+		userInfo: PropTypes.object,  //userInfo.token is what you want
+		photoInfo: PropTypes.object*/
+        globalNavigator.push({
+          title: 'Edit Photo',
+          body: <EditPhoto goBack = {this.goBack} userInfo = {this.userInfo} photoData = {this.photoData} />, //
+          index: 6,
+          outline: 'false', 
+        })
+    }
+
 
       return (
 
 
           <View style ={{flex: 1}}>
+
+
+
+
+
+
+
+
           <View style ={{flex: 1}}>
             <Toolbar title={this.props.wordTitle} icon={'arrow-back'} onIconPress={this.props.onBack} />
-            </View>
+           </View>
 
-          <ListView contentContainerStyle = {{justifyContent: 'center', alignItems: 'center'}}
-          style={{backgroundColor: 'powderblue',  flex: 10, flexWrap: 'wrap'}}
+          <ListView 
+          style={{ backgroundColor: 'powderblue',  flex: 10}}
           dataSource={this.state.dataSource}
           renderRow={(rowData) => {
-            return <Image style= {styles.image} source={{uri: reduceQuality(rowData)}}/>
+            return (
+              <View>
+            <Card >
+              <Card.Media
+                  image={<Image style= {styles.image} source={{uri: reduceQuality(rowData.url)}}/>}
+                  height={300}
+                  width= {300}
+
+                  overlay
+              />
+              <Card.Body>
+                  <Text>Title: {rowData.title}</Text>
+                  <Text>Location: {rowData.id}</Text>
+              </Card.Body>
+
+          </Card>       
+
+          <Button  text='Edit Image Info' value = "NORMAL RAISED" raised={true} onPress={editPhotoButton.bind({goBack: this.props.onBack, photoData: rowData, globalNavigator: this.props.globalNavigator, userInfo: this.props.userInfo})}>
+
+          </Button>
+          <Button  text='Delete Image' value = "NORMAL RAISED" raised={true} onPress={deletePhoto.bind({id: rowData.id, goBack: this.props.onBack, userInfo: this.props.userInfo})}>
+          </Button>
+
+              
+          </View>
+
+              )
             }
           }
             />
@@ -253,6 +384,9 @@ class MyScene extends Component {
       return(this.props.body);
     }
     else if(this.props.title === 'Preview'){
+      return(this.props.body);
+    }
+    else if(this.props.title === 'Edit Photo'){
       return(this.props.body);
     }
 
@@ -293,7 +427,11 @@ class MyScene extends Component {
         </View>
       )
     }
-  }
+}
+
+	
+
+  
 }
 
 function loginCallback(err, profile, token){
@@ -302,17 +440,22 @@ function loginCallback(err, profile, token){
 	    return false;
 	  }
 	  // Authentication worked!
+    console.log(profile);
 	  var userInfo = {};
-	  userInfo.userId = profile.userId;
+	  userInfo.id = profile.userId;
 	  userInfo.nickName = profile.nickname;
-	  userInfo.idToken = token.idToken;
+	  userInfo.token = token.idToken;
+	  userInfo.createdAt = profile.createdAt;
 	  userInfo.loggedIn = true;
+
+
 	  setUserInfo(userInfo, function(userInfo, error){
 	  	console.log(userInfo);
 	  	if(error){
 	  		console.log('Error: ', error);
 	  	}
 	  });
+	  postUserInfo(userInfo);
 
 	 // console.log('Logged in with Auth0!');
 	  console.log('Profile: ', profile);
@@ -324,12 +467,22 @@ function loginCallback(err, profile, token){
  
 async function setUserInfo(userInfo, callback){
 	try{
+    if(userInfo){
+    userInfo.id = userInfo.id.split('|').pop();
 		userInfo = JSON.stringify(userInfo);
+
 		await AsyncStorage.setItem('@IceBikeUserInfo', userInfo);
-		callback(userInfo);
+		if(callback){
+      callback(userInfo);
+  }
+  }
+
+
 	}catch(error){
 		console.log('Problem storing user info');
-		callback(userInfo, error);
+    if(callback){
+		  callback(userInfo, error);
+  }
 	}
 
 }
@@ -343,6 +496,58 @@ async function getUserInfo(callback){
 		callback(userInfo, false)
 	}
 
+}
+function postUserInfo(userInfo){
+	fetch(myServerURL + '/user/' + userInfo.id, {
+	    method: "GET",
+	    headers: {
+	      'Content-Type' : 'application/json',
+	      'Authorization': 'Bearer ' + userInfo.token,
+	      'Data-Type': 'application/json'
+
+	    }
+	  })
+	  .then(function(response){
+	    if(response.ok){
+
+	    	console.log('response**********************:');
+	    	console.log(response._bodyText);
+	    	console.log(typeof response._bodyText);
+
+	    	if(response._bodyText === 'null'){		//user doesn't exist, so add it
+	    		var token = userInfo.token;
+	    		delete userInfo.token;
+	    		delete userInfo.loggedIn;
+	    		userInfo.photos = [];
+		        fetch(myServerURL + '/user', {
+		          method: "POST",
+		          headers: {
+		          'Content-Type' : 'application/json',
+		          'Authorization': 'Bearer ' + token
+
+		          },
+    				body: JSON.stringify(userInfo)
+		        })
+		      .then(function(response){
+		        if(response.ok){
+		          console.log('***************Added user to the database ***');
+		        }
+			    else{
+			      console.log('Network response was not 200');
+			      console.log(response);
+			    }
+
+		      }).catch(function(error){
+			    console.log('Error adding user to database: ' + error);
+			  })
+			  .done();
+		    }else{
+		    	console.log('User is already in the database');
+		    }
+
+
+		}
+	})
 }
 
 const styles = StyleSheet.create({
@@ -364,8 +569,8 @@ const styles = StyleSheet.create({
     margin: 40
   },
     image: {
-    width: 200,
-    height: 200,
+    width: 300,
+    height: 300,
     margin: 10,
   },
 });
