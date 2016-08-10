@@ -21,6 +21,7 @@ var myServerURL = 'http://photorest666.herokuapp.com';
 
 export default class EditPhoto extends Component {
 	static propTypes = {
+    globalNavigator: PropTypes.object,
 		goBack: PropTypes.func,
 		userInfo: PropTypes.object,  //userInfo.token is what you want
 		photoData: PropTypes.object
@@ -82,8 +83,9 @@ export default class EditPhoto extends Component {
         <Form
           ref="form"
           type={imageDescription}
+          value={{title: this.props.photoData.title, location: this.props.photoData.location}}
         />
-        <Button style={{flex:1}} text='Save Changes' value = "NORMAL RAISED" raised={true} />
+        <Button style={{flex:1}} text='Save Changes' value = "NORMAL RAISED" raised={true} onPress = {this.saveChanges.bind(this)}/>
 
         </View>
       </View>
@@ -100,6 +102,40 @@ export default class EditPhoto extends Component {
 
 
 	}
+  saveChanges(){
+
+    var photoDescription = this.refs.form.getValue()
+
+    fetch(myServerURL + '/photo/' + this.props.photoData.id, {
+    method: "PUT",
+    headers: {
+      'Content-Type' : 'application/json',
+      'Authorization': 'Bearer ' + this.props.userInfo.token
+
+    },
+    body: JSON.stringify(photoDescription)
+  })
+  .then(function(response){
+    if(response.ok){
+      console.log('hurray!!!!!!')
+      alert('Edit was saved');
+    }
+    else{
+      callback('Network response was not 200');
+      console.log(response);
+    }
+
+    })
+    .catch(function(error){
+      console.log('Error: ' + error)
+    })
+    .done();
+
+    this.props.globalNavigator.popToTop();
+  }
+
+
+  
 
 
 

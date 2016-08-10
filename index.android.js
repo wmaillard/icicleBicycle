@@ -317,7 +317,7 @@ class MyScene extends Component {
 		photoInfo: PropTypes.object*/
         globalNavigator.push({
           title: 'Edit Photo',
-          body: <EditPhoto goBack = {this.goBack} userInfo = {this.userInfo} photoData = {this.photoData} />, //
+          body: <EditPhoto globalNavigator = {globalNavigator} goBack = {this.goBack} userInfo = {this.userInfo} photoData = {this.photoData} />, //
           index: 6,
           outline: 'false', 
         })
@@ -356,12 +356,12 @@ class MyScene extends Component {
               />
               <Card.Body>
                   <Text>Title: {rowData.title}</Text>
-                  <Text>Location: {rowData.id}</Text>
+                  <Text>Location: {rowData.location}</Text>
               </Card.Body>
 
           </Card>       
 
-          <Button  text='Edit Image Info' value = "NORMAL RAISED" raised={true} onPress={editPhotoButton.bind({goBack: this.props.onBack, photoData: rowData, globalNavigator: this.props.globalNavigator, userInfo: this.props.userInfo})}>
+          <Button  text='Edit Image Info' value = "NORMAL RAISED" raised={true} onPress={editPhotoButton.bind({goBack: this.props.onBack, photoData: rowData, userInfo: this.props.userInfo})}>
 
           </Button>
           <Button  text='Delete Image' value = "NORMAL RAISED" raised={true} onPress={deletePhoto.bind({id: rowData.id, goBack: this.props.onBack, userInfo: this.props.userInfo})}>

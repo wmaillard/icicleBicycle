@@ -105,7 +105,7 @@ void main () {
           })
   }
   capture(uri){
-    var photoDescription = this.refs.form.getValue();
+  var photoDescription = this.refs.form.getValue();
 
    const captureConfig = {
     quality: 1,
@@ -170,8 +170,8 @@ void main () {
 
           }
         }
-        this.props.globalNavigator.pop();
-        this.props.globalNavigator.pop();
+        this.props.globalNavigator.popToTop();
+
 
 
   }
